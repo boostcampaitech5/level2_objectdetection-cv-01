@@ -116,14 +116,30 @@ if eda_type == '데이터셋 분류':
         st.session_state.low_ann = []
         st.session_state.classify_idx = 0
     if st.session_state.classify_idx < data_class.total_num:
+        col1,col2,col3,col4 = st.columns([1,1,3,1])
+        prev_btn = col1.button('prev')
+        next_btn = col2.button('next')
+        target_idx = col3.text_input('move index')
+        index_move = col4.button('move')
+        if prev_btn:
+            st.session_state.classify_idx = (st.session_state.classify_idx -1)%data_class.total_num
+        if next_btn:
+            st.session_state.classify_idx = (st.session_state.classify_idx +1)%data_class.total_num
+        if index_move:
+            target_idx = int(target_idx)
+            if target_idx>=0 and target_idx< data_class.total_num:
+                st.session_state.classify_idx = target_idx
+
         target_img = eda_fns.data_df.iloc[st.session_state.classify_idx]
-        col1,col2,col3 = st.columns([1,1,1])
+        col1,col2,col3,col4 = st.columns([1,1,1,1])
         with col1:
             high = st.button('high')
         with col2:
             mid = st.button('mid')
         with col3:
             low = st.button('low')
+        with col4:
+            is_save = st.button('save')
         if high:
             st.session_state.high_ann.append(target_img.to_dict())
             st.session_state.classify_idx+=1
@@ -133,6 +149,8 @@ if eda_type == '데이터셋 분류':
         elif low:
             st.session_state.low_ann.append(target_img.to_dict())
             st.session_state.classify_idx+=1
+        elif is_save:
+            st.session_state.classify_idx=5000
         if st.session_state.classify_idx < data_class.total_num:
             target_img = eda_fns.data_df.iloc[st.session_state.classify_idx]
             st.text(f'Idx: {st.session_state.classify_idx}:{data_class.total_num}')
@@ -145,7 +163,6 @@ if eda_type == '데이터셋 분류':
         st.text("저장하시겠습니까?")
         save_btn = st.button('save')
         if save_btn:
-            print(st.session_state.high_ann)
             save_classify_json(st.session_state.high_ann,st.session_state.mid_ann,st.session_state.low_ann)
 
 if eda_type == '클래스 분포':

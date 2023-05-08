@@ -45,6 +45,8 @@ def get_img_with_bbox(img_config,anns,vis_anns = None):
     return fig
 def save_classify_json(high,mid,low):
     dir = "/opt/ml/saved_json"
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
     high_json = {'images':high}
     mid_json = {'images':mid}
     low_json = {'images':low}
