@@ -1,0 +1,10 @@
+root = ../dataset/
+model_name = htc_without_semantic_r50_fpn_adam
+cfg_path = ./custom/
+train_ann_file_name = split_train.json
+train_resize = 512
+val_ann_file_name = split_val.json
+val_resize = 512
+test_ann_file_name = test.json
+test_resize = 512
+work_dir_path = ./work_dirs/
