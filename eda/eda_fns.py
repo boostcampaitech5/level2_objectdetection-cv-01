@@ -6,9 +6,8 @@ from simple_loader import json_to_df
 
 data_df, ann_df = json_to_df()
 class_names = ['General\ntrash', 'Paper', 'Paper\npack', 'Metal', 'Glass', 'Plastic', 'Styrofoam', 'Plastic\nbag', 'Battery', 'Clothing']
+class_list = pd.Series(np.array([0,0,0,0,0,0,0,0,0,0],dtype=int))
 
-
-        
 
 #bar chart에 수치 표기
 def bar_score_show(bar,score,ax):
@@ -24,6 +23,9 @@ def bar_score_show(bar,score,ax):
 def eda_class_disribution():
     fig,ax = plt.subplots()
     num_of_class = ann_df['category_id'].value_counts().sort_index()
+
+    num_of_class = class_list.add(num_of_class,fill_value=0).astype(int)
+
     bar = ax.bar(class_names,num_of_class)
     bar_score_show(bar,num_of_class,ax)
     return [fig,ax,num_of_class]

@@ -3,6 +3,7 @@ from simple_loader import *
 from eda_fns import *
 import eda_fns
 import matplotlib.pyplot as plt
+from test import append_list
 
 #streamlit run streamlit_tool.py --server.port 30003 --server.fileWatcherType none
 import eda_fns
@@ -25,19 +26,58 @@ eda_type = st.sidebar.selectbox('EDA type',('default','이미지 보기','bbox�
                                             ,'클래스 분포', '이미지당 오브젝트 개수'
                                             ,'이미지당 클래스 개수', '박스의 중심점 분포'
                                             ,'박스의 크기 분포','박스의 가로세로 비율 분포'
-                                            ,'target class 바꾸기'
+                                            ,'target class 바꾸기',
+                                            '분류된 데이터셋 보기','분류 데이터셋 저장'
                                             ))
+if eda_type == '분류된 데이터셋 보기':
+    data_df,ann_df = json_to_df()
+    eda_fns.data_df, eda_fns.ann_df = json_to_df()
+    with open('../../backup/high.json','r') as f:
+        data = json.load(f)
+        eda_fns.data_df = pd.DataFrame(data['images'])
+    data_df = data_df.iloc[append_list]
+    eda_fns.data_df = pd.concat([eda_fns.data_df,data_df])
+    eda_fns.ann_df = eda_fns.ann_df[eda_fns.ann_df['image_id'].isin(eda_fns.data_df['id'])]
+    data_class.num_class_plt = eda_class_disribution()
+    data_class.object_per_image_plt = eda_one_image_object_distribution()
+    data_class.total_num = len(eda_fns.data_df)
+    data_class.class_per_image_plt = eda_one_image_class_distribution()
+    data_class.box_pos_plt = eda_box_position_distribution()
+    data_class.box_area_plt = eda_box_area_distribution()
+    data_class.box_ratio_plt = eda_box_wh_ratio_distribution()
+
+if eda_type == '분류 데이터셋 저장':
+    with open('../../dataset/train.json','r') as f:
+        data = json.load(f)
+        save_data_df = pd.DataFrame(data['images'])
+        save_ann_df = pd.DataFrame(data['annotations'])
+
+    save_t_data_df = save_data_df.drop(append_list)
+    save_v_data_df = save_data_df.iloc[append_list]
+    save_t_ann_df = save_ann_df[save_ann_df['image_id'].isin(save_t_data_df['id'])]
+    save_v_ann_df = save_ann_df[save_ann_df['image_id'].isin(save_v_data_df['id'])]
+
+    with open('../../dataset/split_train.json','w') as f:
+        data['images']=save_t_data_df.to_dict(orient='records')
+        data['annotations']=save_t_ann_df.to_dict(orient='records')
+        json.dump(data,f,indent=2)
+    with open('../../dataset/split_val.json','w') as f:
+        data['images']=save_v_data_df.to_dict(orient='records')
+        data['annotations']=save_v_ann_df.to_dict(orient='records')
+        json.dump(data,f,indent=2)
+
 
 if eda_type == 'target class 바꾸기':
     st.text('class 종류: 0.General trash, 1.Paper, 2.Paper pack, 3.Metal, 4.Glass, 5.Plastic, 6.Styrofoam, 7.Plastic bag, 8.Battery, 9.Clothing')
-    switch_class = st.selectbox('변경할 class를 선택하세요.',['all',0,1,2,3,4,5,6,7,8,9])
+    switch_class = st.selectbox('변경할 class를 선택하세요.',['no action',0,1,2,3,4,5,6,7,8,9,'reset'])
 
-    if switch_class in ['all',0,1,2,3,4,5,6,7,8,9]:
-        eda_fns.data_df, eda_fns.ann_df = json_to_df()
+    if switch_class in [0,1,2,3,4,5,6,7,8,9,'reset']:
+        if switch_class == 'reset':
+            eda_fns.data_df, eda_fns.ann_df = json_to_df('../../dataset/split_train.json')
         if switch_class in [0,1,2,3,4,5,6,7,8,9]:
             st.text(f'switch class to {switch_class}')
-            eda_fns.ann_df = eda_fns.ann_df[eda_fns.ann_df['category_id']==switch_class]    
-            eda_fns.data_df = eda_fns.data_df.iloc[eda_fns.ann_df['image_id'].unique()]
+            eda_fns.ann_df = eda_fns.ann_df[eda_fns.ann_df['category_id']==switch_class]
+            eda_fns.data_df = eda_fns.data_df[eda_fns.data_df['id'].isin(eda_fns.ann_df['image_id'].unique())]
             
         
         data_class.num_class_plt = eda_class_disribution()
@@ -66,8 +106,6 @@ if eda_type == '이미지 보기':
             st.session_state.image_index = target_idx
 
     target_img = eda_fns.data_df.iloc[st.session_state.image_index]
-    print(eda_fns.data_df[:5])
-    print(target_img)
     st.image(get_img(target_img))
     st.text(f'Img idx: {st.session_state.image_index }/{data_class.total_num}\n\
             info\n{target_img}')

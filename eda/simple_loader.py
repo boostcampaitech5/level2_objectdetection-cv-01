@@ -58,7 +58,10 @@ def save_classify_json(high,mid,low):
         json.dump(low_json,f)
 if __name__ == '__main__':
     data,box=json_to_df()
-    #get_img(data.loc[0])
-    get_img_with_bbox(data.loc[0],[[50,50,200,200],[100,100,50,50]])
-
+    # #get_img(data.loc[0])
+    # get_img_with_bbox(data.loc[0],[[50,50,200,200],[100,100,50,50]])
+    # with open('../../backup/high.json','r') as f:
+    #     data = json.load(f)
+    # pd_data = pd.DataFrame(data['images'])
+    # print(pd_data)
 # %%
