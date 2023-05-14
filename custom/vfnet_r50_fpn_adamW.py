@@ -3,6 +3,10 @@ _base_ = [
     "./scheduler/schedule_30e_adamW.py",
     "../mmdetection/configs/_base_/default_runtime.py",
 ]
+pretrained = "https://download.openmmlab.com/mmdetection/v2.0/vfnet/vfnet_r50_fpn_1x_coco/vfnet_r50_fpn_1x_coco_20201027-38db6f58.pth"
+# fp16 settings
+fp16 = dict(loss_scale=512.0)
+
 # model settings
 model = dict(
     type="VFNet",
@@ -15,7 +19,7 @@ model = dict(
         norm_cfg=dict(type="BN", requires_grad=True),
         norm_eval=True,
         style="pytorch",
-        init_cfg=dict(type="Pretrained", checkpoint="torchvision://resnet50"),
+        init_cfg=dict(type="Pretrained", checkpoint=pretrained),
     ),
     neck=dict(
         type="FPN",
@@ -28,7 +32,7 @@ model = dict(
     ),
     bbox_head=dict(
         type="VFNetHead",
-        num_classes=80,
+        num_classes=10,
         in_channels=256,
         stacked_convs=3,
         feat_channels=256,

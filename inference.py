@@ -2,6 +2,7 @@ import os
 import pandas as pd
 
 from mmcv import Config
+from mmdet.apis.train import set_random_seed
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint
 from mmdet.apis import single_gpu_test
@@ -19,16 +20,15 @@ def inference(args):
     cfg.data.test.classes = args.classes
     cfg.data.test.img_prefix = args.root
     cfg.data.test.ann_file = args.root + args.test_ann_file_name
-    cfg.data.test.pipeline[1]["img_scale"] = args.test_resize
+    # cfg.data.test.pipeline[1]["img_scale"] = args.test_resize
     cfg.data.test.test_mode = True
 
     cfg.data.samples_per_gpu = 4
 
     cfg.seed = 2023
-    cfg.gpu_ids = [1]
+    set_random_seed(cfg.seed, deterministic=False)
+    cfg.gpu_ids = [0]
     cfg.work_dir = args.work_dir_path + args.model_name
-
-    cfg.model.roi_head.bbox_head.num_classes = 10
 
     cfg.optimizer_config.grad_clip = dict(max_norm=35, norm_type=2)
     cfg.model.train_cfg = None

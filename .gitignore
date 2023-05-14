@@ -1,3 +1,4 @@
 mmdetection/
 work_dirs/
-wandb
+wandb/
+src/

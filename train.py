@@ -1,5 +1,6 @@
-import wandb
+import torch
 from mmcv import Config
+from mmcv.runner import load_checkpoint
 from mmdet.apis.train import set_random_seed
 from mmdet.datasets import build_dataset
 from mmdet.models import build_detector
@@ -14,17 +15,17 @@ def train(args):
     cfg.data.train.classes = args.classes
     cfg.data.train.img_prefix = args.root
     cfg.data.train.ann_file = args.root + args.train_ann_file_name
-    cfg.data.train.pipeline[2]["img_scale"] = args.train_resize
+    # cfg.data.train.pipeline[2]["img_scale"] = args.train_resize
 
     cfg.data.val.classes = args.classes
     cfg.data.val.img_prefix = args.root
     cfg.data.val.ann_file = args.root + args.val_ann_file_name
-    cfg.data.val.pipeline[2]["img_scale"] = args.val_resize
+    # cfg.data.val.pipeline[1]["img_scale"] = args.val_resize
 
     cfg.data.test.classes = args.classes
     cfg.data.test.img_prefix = args.root
     cfg.data.test.ann_file = args.root + args.test_ann_file_name
-    cfg.data.test.pipeline[1]["img_scale"] = args.test_resize
+    # cfg.data.test.pipeline[1]["img_scale"] = args.test_resize
 
     cfg.data.samples_per_gpu = 4
 
@@ -41,14 +42,17 @@ def train(args):
         dict(type="TextLoggerHook", interval=100),
         dict(
             type="MMDetWandbHook",
-            init_kwargs={"project": args.model_name},
+            init_kwargs={"project": args.project_name, "name": args.model_name},
             interval=100,
         ),
     ]
     datasets = [build_dataset(cfg.data.train)]
 
     model = build_detector(cfg.model)
-    model.init_weights()
+    # model.init_weights()
+
+    checkpoint_path = args.pretrained
+    load_checkpoint(model, checkpoint_path, map_location="cpu")
 
     train_detector(model, datasets, cfg, distributed=False, validate=True, meta=dict())
 
@@ -97,6 +101,7 @@ class Args:
 
 
 if __name__ == "__main__":
+    torch.cuda.empty_cache()
     args = Args("./custom/data_config.txt")
 
     print(args)
