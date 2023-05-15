@@ -1,0 +1,41 @@
+{
+    "classes": ["General trash", "Paper", "Paper pack", "Metal", "Glass", 
+    "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing"],
+    "data_dir": "/opt/ml/dataset/",
+    "resize": [1024,1024],
+    "seed": 311,
+    "num_classes": 10,
+    "train_json": "split_train.json",
+    "val_json": "split_val.json",
+    "test_json": "test.json",
+    "max_epochs": 150,
+    "wandb_logger": true,
+    "wandb_args":{
+        "init_kwargs":{
+            "project": "object_detection",
+            "entity": "zionia",
+            "config": [],
+            "tags": []
+        },
+        "interval": 100,
+        "log_checkpoint": true,
+        "log_checkpoint_metadata": false,
+        "num_eval_images": 400,
+        "bbox_score_thr": 0.3
+    },
+    "log_evaluation": true,
+    "losses":{
+
+    },
+    "Visualizer": {
+        "type":"Visualzier",
+        "name": "vis",
+        "vis_backend":[{
+            "type":"LocalVisBackend"
+        }]
+    
+    },
+    "work_dir": "./work_dirs/swin",
+    "base_model": "./configs/custom/custom.py",
+    "load_from": "yolov3_d53_320_273e_coco-421362b6.pth"
+}
