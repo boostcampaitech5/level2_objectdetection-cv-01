@@ -10,6 +10,7 @@ from mmcv.runner import load_checkpoint
 
 from datetime import datetime
 import os
+import wandb
 
 def set_wandb(cfg:Config):
     """
@@ -69,7 +70,11 @@ def set_config(cfg:Config, epochs):
     cfg.checkpoint_config = dict(max_keep_ckpts=3, interval=1)
     cfg.device = get_device()
 
+    # evaluation = dict(interval=1, classwise=True, metric="bbox")
+
     cfg.runner = dict(type='EpochBasedRunner', max_epochs=epochs)
+    # cfg.optimizer = dict(type='SGD', lr=0.002, momentum=0.9, weight_decay=0.0001)
+    
 
 def train(cfg_path, epochs, checkpoint_path=None):
     """ train model
@@ -109,8 +114,16 @@ def train(cfg_path, epochs, checkpoint_path=None):
     train_detector(model, datasets, cfg, distributed=False, validate=True, meta=dict())
 
 if __name__ == '__main__':
-    train('./configs/yolo/myYolov3.py', 2)
-    # train('./configs/yolo/yolov3_d53_320_273e_coco.py', 2)
-    # train('./configs/yolo/yolov3_d53_320_273e_coco.py', 60,
-    #       './work_dirs/230510_0951_YOLOV3_epochs2/latest.pth')
-    # train('./configs/ssd/mySSD300.py', 3)
+
+    # SSD 300 / pre-trained
+    # train('./configs/ssd/mySSD300.py', 60,
+    #         './models/ssd300_coco_20210803_015428-d231a06e.pth')
+    
+    # SSD 512 / pre-trained
+    train('./configs/ssd/mySSD512.py', 60,
+            './models/ssd512_coco_20210803_022849-0a47a1ca.pth')
+
+    # YOLO v3 / pre-trained
+    # train('./configs/yolo/myYolov3.py', 60, 
+    #     #   './models/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth')
+    #         './work_dirs/230511_1016_YOLOV3_epochs60_pretrained/latest.pth')
