@@ -45,23 +45,6 @@ def set_config(cfg:Config, epochs):
         cfg (Config): config to customize
         epochs (int): train epoch
     """
-    # cfg.data.train.classes = classes
-    # cfg.data.train.img_prefix = data_root
-    # cfg.data.train.ann_file = data_root + 'split_train.json'
-    # cfg.data.train.pipeline[4]["img_scale"] = (512, 512)
-
-    # cfg.data.test.classes = classes
-    # cfg.data.test.img_prefix = data_root
-    # cfg.data.test.ann_file = data_root + 'test.json'
-    # cfg.data.test.pipeline[1]["img_scale"] = (512,512)
-
-    # cfg.data.val.classes = classes
-    # cfg.data.val.img_prefix = data_root
-    # cfg.data.val.ann_file = data_root + 'split_val.json'
-    # cfg.data.val.pipeline = cfg.data.test.pipeline
-
-    # cfg.model.bbox_head['num_classes'] = 10
-
     # cfg.data.samples_per_gpu = 4
 
     cfg.seed = 2023
@@ -74,6 +57,17 @@ def set_config(cfg:Config, epochs):
 
     cfg.runner = dict(type='EpochBasedRunner', max_epochs=epochs)
     # cfg.optimizer = dict(type='SGD', lr=0.002, momentum=0.9, weight_decay=0.0001)
+
+    # fp16
+    cfg.fp16 = dict(loss_scale=512.0)
+
+    # soft nms
+    cfg.test.config.nms=dict(type="soft_nms", iou_threshold=0.7)
+
+    # cosine annealing
+    cfg.lr_config=dict(polyicy='CosineAnnealing', min_lr_ratio=0.001, by_epoch = False)
+    # cosine restart
+    # cfg.lr_config=dict(polyicy="CosineResatrt", min_lr_ratio=0.001, by_epoch = False)
     
 
 def train(cfg_path, epochs, checkpoint_path=None):
