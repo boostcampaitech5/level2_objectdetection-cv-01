@@ -1,4 +1,7 @@
-_base_ = './yolov3_d53_mstrain-608_273e_coco.py'
+_base_ = [
+    '../_base_/models/ssd300.py', '../_base_/datasets/coco_detection.py',
+    '../_base_/schedules/schedule_2x.py', '../_base_/default_runtime.py'
+]
 
 # dataset settings
 # dataset_type = 'CocoDataset'
@@ -9,82 +12,73 @@ classes = ("General trash", "Paper", "Paper pack", "Metal", "Glass",
 
 # workflow = [('train', 1), ('val', 1)]
 
+input_size = 512
 model = dict(
-    type='YOLOV3',
+    type='SingleStageDetector',
     backbone=dict(
-        type='Darknet',
-        depth=53,
-        out_indices=(3, 4, 5),
-        init_cfg=dict(type='Pretrained', checkpoint='open-mmlab://darknet53')),
+        type='SSDVGG',
+        depth=16,
+        with_last_pool=False,
+        ceil_mode=True,
+        out_indices=(3, 4),
+        out_feature_indices=(22, 34),
+        init_cfg=dict(
+            type='Pretrained', checkpoint='open-mmlab://vgg16_caffe')),
     neck=dict(
-        type='YOLOV3Neck',
-        num_scales=3,
-        in_channels=[1024, 512, 256],
-        out_channels=[512, 256, 128]),
+        type='SSDNeck',
+        in_channels=(512, 1024),
+        out_channels=(512, 1024, 512, 256, 256, 256),
+        level_strides=(2, 2, 1, 1),
+        level_paddings=(1, 1, 0, 0),
+        l2_norm_scale=20),
     bbox_head=dict(
-        type='YOLOV3Head',
+        type='SSDHead',
+        in_channels=(512, 1024, 512, 256, 256, 256),
         num_classes=10,
-        in_channels=[512, 256, 128],
-        out_channels=[1024, 512, 256],
         anchor_generator=dict(
-            type='YOLOAnchorGenerator',
-            base_sizes=[[(116, 90), (156, 198), (373, 326)],
-                        [(30, 61), (62, 45), (59, 119)],
-                        [(10, 13), (16, 30), (33, 23)]],
-            strides=[32, 16, 8]),
-        bbox_coder=dict(type='YOLOBBoxCoder'),
-        featmap_strides=[32, 16, 8],
-        loss_cls=dict(
-            type='CrossEntropyLoss',
-            use_sigmoid=True,
-            loss_weight=1.0,
-            reduction='sum'),
-        loss_conf=dict(
-            type='CrossEntropyLoss',
-            use_sigmoid=True,
-            loss_weight=1.0,
-            reduction='sum'),
-        loss_xy=dict(
-            type='CrossEntropyLoss',
-            use_sigmoid=True,
-            loss_weight=2.0,
-            reduction='sum'),
-        loss_wh=dict(type='MSELoss', loss_weight=2.0, reduction='sum')),
-    # training and testing settings
+            type='SSDAnchorGenerator',
+            scale_major=False,
+            input_size=input_size,
+            basesize_ratio_range=(0.15, 0.9),
+            strides=[8, 16, 32, 64, 100, 300],
+            ratios=[[2], [2, 3], [2, 3], [2, 3], [2], [2]]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[.0, .0, .0, .0],
+            target_stds=[0.1, 0.1, 0.2, 0.2])),
+    # model training and testing settings
     train_cfg=dict(
         assigner=dict(
-            type='GridAssigner',
+            type='MaxIoUAssigner',
             pos_iou_thr=0.5,
             neg_iou_thr=0.5,
-            min_pos_iou=0)),
+            min_pos_iou=0.,
+            ignore_iof_thr=-1,
+            gt_max_assign_all=False),
+        smoothl1_beta=1.,
+        allowed_border=-1,
+        pos_weight=-1,
+        neg_pos_ratio=3,
+        debug=False),
     test_cfg=dict(
         nms_pre=1000,
-        min_bbox_size=0,
-        score_thr=0.05,
-        conf_thr=0.005,
         nms=dict(type='nms', iou_threshold=0.45),
-        max_per_img=100))
+        min_bbox_size=0,
+        score_thr=0.02,
+        max_per_img=200))
+cudnn_benchmark = True
 
-img_norm_cfg = dict(mean=[0, 0, 0], std=[255., 255., 255.], to_rgb=True)
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
-    dict(
-        type='Expand',
-        mean=img_norm_cfg['mean'],
-        to_rgb=img_norm_cfg['to_rgb'],
-        ratio_range=(1, 2)),
-    dict(
-        type='MinIoURandomCrop',
-        min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
-        min_crop_size=0.3),
     dict(type='Resize', img_scale=(512, 512), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='PhotoMetricDistortion'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -122,5 +116,3 @@ data = dict(
         ann_file=data_root + 'test.json',
         img_prefix=data_root,
         pipeline=test_pipeline))
-
-# fp16 = dict(loss_scale=512.0)
