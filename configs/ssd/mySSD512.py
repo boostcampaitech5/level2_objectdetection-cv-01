@@ -46,6 +46,27 @@ model = dict(
             type='DeltaXYWHBBoxCoder',
             target_means=[.0, .0, .0, .0],
             target_stds=[0.1, 0.1, 0.2, 0.2])),
+
+        # focal loss
+        # loss_cls=dict(
+        #     type='FocalLoss',
+        #     use_sigmoid=True,
+        #     gamma=2.0,
+        #     alpha=0.25,
+        #     loss_weight=1.0),
+        # loss_conf=dict(
+        #     type='FocalLoss',
+        #     use_sigmoid=True,
+        #     gamma=2.0,
+        #     alpha=0.25,
+        #     loss_weight=1.0),
+        # loss_xy=dict(
+        #     type='FocalLoss',
+        #     use_sigmoid=True,
+        #     gamma=2.0,
+        #     alpha=0.25,
+        #     loss_weight=1.0),
+
     # model training and testing settings
     train_cfg=dict(
         assigner=dict(
@@ -63,6 +84,8 @@ model = dict(
     test_cfg=dict(
         nms_pre=1000,
         nms=dict(type='nms', iou_threshold=0.45),
+        # soft nms
+        # nms=dict(type="soft_nms", iou_threshold=0.7),
         min_bbox_size=0,
         score_thr=0.02,
         max_per_img=200))
@@ -73,7 +96,20 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='Resize', img_scale=(512, 512), keep_ratio=True),
+
+    # # mosaic
+    # dict(type='Mosaic', img_scale=(512, 512), pad_val=114.0),
+    
+    # # mixup
+    # dict(
+    #     type='MixUp',
+    #     img_scale=(512, 512),
+    #     ratio_range=(0.8, 1.6),
+    #     pad_val=114.0),
+
+    # dict(type='Resize', img_scale=(512, 512), keep_ratio=True),
+    # multiscale
+    dict(type='Resize', img_scale=[(1024, 1024), (512, 512)], multiscale_mode = "range", keep_ratio=True), 
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -96,7 +132,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=16,
+    samples_per_gpu=8,
+    # samples_per_gpu=16,
     # workers_per_gpu=4,
     train=dict(
         # type=dataset_type,
