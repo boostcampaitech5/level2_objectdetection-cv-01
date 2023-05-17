@@ -12,7 +12,8 @@ from pandas import DataFrame
 from pycocotools.coco import COCO
 import numpy as np
 import json
-with open('./config_swin_detr.json','r') as f:
+
+with open('./config_dcn.json','r') as f:
     config = json.load(f)
 
 classes = ("General trash", "Paper", "Paper pack", "Metal", "Glass", 
@@ -24,7 +25,7 @@ cfg = Config.fromfile(config['base_model'])
 root=config['data_dir']
 
 # epoch = 'latest'
-epoch = 'epoch_18'
+epoch = 'epoch_17'
 
 # dataset config 수정
 cfg.data.test.classes = classes
@@ -39,7 +40,7 @@ cfg.seed=config['seed']
 cfg.gpu_ids = [1]
 cfg.work_dir = config['work_dir']
 
-cfg.model.bbox_head.num_classes = config['num_classes']
+cfg.model.roi_head.bbox_head.num_classes = config['num_classes']
 
 cfg.optimizer_config.grad_clip = dict(max_norm=35, norm_type=2)
 cfg.model.train_cfg = None

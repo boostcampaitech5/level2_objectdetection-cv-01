@@ -9,7 +9,7 @@
     "val_json": "split_val.json",
     "test_json": "test.json",
     "max_epochs": 80,
-    "wandb_logger": true,
+    "wandb_logger": false,
     "wandb_args":{
         "init_kwargs":{
             "project": "object_detection",
@@ -37,5 +37,5 @@
     },
     "work_dir": "./work_dirs/dcn",
     "base_model": "./configs/custom/custom_dcn.py",
-    "load_from": "faster_rcnn_r50_fpn_mdconv_c3-c5_group4_1x_coco_20200130-01262257.pth"
+    "load_from": "epoch_17.pth"
 }

@@ -5,6 +5,11 @@ model = dict(
         stage_with_dcn=(False, True, True, True)))
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+
+
+
+classes = ["General trash", "Paper", "Paper pack", "Metal", "Glass", 
+    "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing"]
 train_pipeline = [
     dict(type='Mosaic',img_scale=(1024,1024),prob=0.3),
     #dict(type='MixUp',img_scale=(1024,1024),ratio_range=(0.8,1.2)),
@@ -45,9 +50,10 @@ test_pipeline = [
 train_dataset=dict(
         type='MultiImageMixDataset',
         dataset=dict(
+            classes = classes,
             type='CocoDataset',
-            ann_file='',
-            img_prefix='',
+            ann_file='opt/ml/dataset/classwise_dataset/split_train_0.json',
+            img_prefix='opt/ml/dataset',
             pipeline=[
                 dict(type='LoadImageFromFile'),
                 dict(type='LoadAnnotations', with_bbox=True)
@@ -62,5 +68,10 @@ data = dict(
     workers_per_gpu=2,
     # train=train_dataset,
     train=train_dataset,
-    val=dict(type='CocoDataset',pipeline=test_pipeline),
-    test=dict(type='CocoDataset',pipeline=test_pipeline))
+    val=dict(type='CocoDataset',pipeline=test_pipeline,ann_file='opt/ml/dataset/classwise_dataset/split_train_0.json',
+            img_prefix='opt/ml/dataset',classes = classes),
+    test=dict(type='CocoDataset',pipeline=test_pipeline,ann_file='opt/ml/dataset/classwise_dataset/split_train_0.json',
+            img_prefix='opt/ml/dataset',classes=classes))
+
+
+

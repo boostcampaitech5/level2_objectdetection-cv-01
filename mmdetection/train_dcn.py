@@ -47,7 +47,7 @@ def train(config):
     cfg.data.test.classes = classes
     cfg.data.test.img_prefix = root
     cfg.data.test.ann_file = root + config['test_json'] # test json 정보
-
+    
     #valid set이 존재할 경우
     if "val_json" in config:
         cfg.data.val.classes = classes
@@ -95,8 +95,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog = 'MMdetectionWithConfig',
                                      description='')
     parser.add_argument('-c','--config',default='./config.json',type=str,help='학습에 사용할 config파일의 path')
-
+    
     args = parser.parse_args()
     with open(args.config,'r') as w:
         config = json.load(w)
+
     train(config)
