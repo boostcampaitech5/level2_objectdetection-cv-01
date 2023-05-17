@@ -1,33 +1,48 @@
 
 _base_ = [
-     '../_base_/default_runtime.py'
+     '../_base_/default_runtime.py','../_base_/datasets/coco_detection.py'
 ]
+pretrained = 'https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_large_patch4_window12_384_22k.pth'
+pretrained_neck= 'https://github.com/RistoranteRist/mmlab-weights/releases/download/dino-swinl/dino-5scale_swin-l_8xb2-36e_coco-5486e051.pth'
+pretrained_head = '/opt/ml/level2_objectdetection-cv-01/mmdetection/work_dirs/deformable_detr/deformable_detr_r50_16x2_50e_coco_20210419_220030-a12b9512.pth'
+
 
 model = dict(
     type='DeformableDETR',
     backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
-        out_indices=(1, 2, 3),
-        frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=False),
-        norm_eval=True,
-        style='pytorch',
-        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
+        type='SwinTransformer',
+        embed_dims=192,
+        depths=[2, 2, 18, 2],
+        num_heads=[6, 12, 24, 48],
+        window_size=12,
+        mlp_ratio=4,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.,
+        attn_drop_rate=0.,
+        drop_path_rate=0.2,
+        patch_norm=True,
+        out_indices=(0, 1, 2, 3),
+        # Please only add indices that would be used
+        # in FPN, otherwise some parameter will not be used
+        with_cp=True,
+        convert_weights=True,
+        init_cfg=dict(type='Pretrained', checkpoint=pretrained_neck)),
     neck=dict(
         type='ChannelMapper',
-        in_channels=[512, 1024, 2048],
+        in_channels=[192, 384, 768, 1536],
         kernel_size=1,
         out_channels=256,
         act_cfg=None,
         norm_cfg=dict(type='GN', num_groups=32),
-        num_outs=4),
+        num_outs=4,
+        init_cfg=dict(type='Pretrained',checkpoint=pretrained_neck)),
     bbox_head=dict(
         type='DeformableDETRHead',
+        init_cfg=dict(type="Pretrained",checkpoint=pretrained_head),
         num_query=300,
-        num_classes=80,
-        in_channels=2048,
+        num_classes=10,
+        in_channels=1024,
         sync_cls_avg_factor=True,
         as_two_stage=False,
         transformer=dict(
@@ -70,16 +85,16 @@ model = dict(
         loss_cls=dict(
             type='FocalLoss',
             use_sigmoid=True,
-            gamma=3.0,
+            gamma=2.0,
             alpha=0.25,
-            loss_weight=5.0),
+            loss_weight=2.0),
         loss_bbox=dict(type='L1Loss', loss_weight=5.0),
         loss_iou=dict(type='GIoULoss', loss_weight=2.0)),
     # training and testing settings
     train_cfg=dict(
         assigner=dict(
             type='HungarianAssigner',
-            cls_cost=dict(type='FocalLossCost', weight=5.0),
+            cls_cost=dict(type='FocalLossCost', weight=2.0),
             reg_cost=dict(type='BBoxL1Cost', weight=5.0, box_format='xywh'),
             iou_cost=dict(type='IoUCost', iou_mode='giou', weight=2.0))),
     test_cfg=dict(max_per_img=100))
@@ -88,7 +103,7 @@ img_norm_cfg = dict(
 
 
 train_pipeline = [
-    dict(type='Mosaic',img_scale=(1024,1024),prob=0.3),
+    dict(type='Mosaic',img_scale=(512,512),prob=0.3),
     #dict(type='MixUp',img_scale=(1024,1024),ratio_range=(0.8,1.2)),
     # dict(type='LoadImageFromFile'),
     # dict(type='LoadAnnotations', with_bbox=True), 
@@ -98,7 +113,7 @@ train_pipeline = [
         policies=[[
             dict(
                 type='Resize',
-                img_scale=[(512,512),(1024,1024)],
+                img_scale=[(512,512)],
                 # img_scale=(1024,1024),
                 multiscale_mode='range',
                 keep_ratio=True)
@@ -141,6 +156,7 @@ train_dataset=dict(
         pipeline=train_pipeline)
 
 data = dict(
+    _delete_=True,
     samples_per_gpu=2,
     workers_per_gpu=2,
     train=train_dataset,
@@ -167,6 +183,10 @@ lr_config = dict(policy='step', step=[100])
 #                  restart_weights=[1,1],
 #                  min_lr=1e-6,
 #                  by_epoch=False)
+
 runner = dict(type='EpochBasedRunner', max_epochs=150)
 auto_scale_lr = dict(base_batch_size=32)
 evaluation = dict(interval=1,classwise=True, metric='bbox')
+
+#fp16 = dict(loss_scale=512.)
+#runner.meta['fp16']=fp16

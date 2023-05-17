@@ -12,7 +12,7 @@ from pandas import DataFrame
 from pycocotools.coco import COCO
 import numpy as np
 import json
-with open('./config_detr.json','r') as f:
+with open('./config_swin_detr.json','r') as f:
     config = json.load(f)
 
 classes = ("General trash", "Paper", "Paper pack", "Metal", "Glass", 
@@ -24,7 +24,7 @@ cfg = Config.fromfile(config['base_model'])
 root=config['data_dir']
 
 # epoch = 'latest'
-epoch = 'epoch_38'
+epoch = 'epoch_18'
 
 # dataset config 수정
 cfg.data.test.classes = classes
@@ -55,7 +55,7 @@ data_loader = build_dataloader(
 
 # checkpoint path
 checkpoint_path = os.path.join(cfg.work_dir, f'{epoch}.pth')
-
+# checkpoint_path = '/opt/ml/level2_objectdetection-cv-01/mmdetection/work_dirs/deformable_detr/epoch_18.pth'
 model = build_detector(cfg.model, test_cfg=cfg.get('test_cfg')) # build detector
 checkpoint = load_checkpoint(model, checkpoint_path, map_location='cpu') # ckpt load
 

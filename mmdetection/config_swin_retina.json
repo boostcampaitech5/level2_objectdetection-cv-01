@@ -35,7 +35,7 @@
         }]
     
     },
-    "work_dir": "./work_dirs/deformable_detr",
-    "base_model": "./configs/custom/custom copy.py",
-    "load_from": "deformable_detr_r50_16x2_50e_coco_20210419_220030-a12b9512.pth"
+    "work_dir": "./work_dirs/swin_retina",
+    "base_model": "./configs/custom/custom_swin_retina.py"
+    
 }
