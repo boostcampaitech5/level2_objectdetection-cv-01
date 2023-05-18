@@ -73,7 +73,7 @@ if eda_type == 'target class 바꾸기':
 
     if switch_class in [0,1,2,3,4,5,6,7,8,9,'reset']:
         if switch_class == 'reset':
-            eda_fns.data_df, eda_fns.ann_df = json_to_df('../../dataset/split_train.json')
+            eda_fns.data_df, eda_fns.ann_df = json_to_df('../../dataset/train.json')
         if switch_class in [0,1,2,3,4,5,6,7,8,9]:
             st.text(f'switch class to {switch_class}')
             eda_fns.ann_df = eda_fns.ann_df[eda_fns.ann_df['category_id']==switch_class]
