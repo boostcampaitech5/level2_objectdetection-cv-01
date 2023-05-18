@@ -66,7 +66,7 @@ def train(config):
     #cfg.model.roi_head.bbox_head.num_classes = 10
     cfg.runner['max_epochs'] = config['max_epochs']
     cfg.optimizer_config.grad_clip = dict(max_norm=35, norm_type=2)
-    cfg.checkpoint_config = dict(max_keep_ckpts=3, interval=1)
+    cfg.checkpoint_config = dict(max_keep_ckpts=10, interval=1)
     cfg.device = get_device()
     #cfg.fp16 = dict(loss_scale=512.)
 

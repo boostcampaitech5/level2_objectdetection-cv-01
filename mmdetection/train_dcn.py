@@ -68,7 +68,7 @@ def train(config):
 
     cfg.runner['max_epochs'] = config['max_epochs']
     cfg.optimizer_config.grad_clip = dict(max_norm=35, norm_type=2)
-    cfg.checkpoint_config = dict(max_keep_ckpts=3, interval=1)
+    cfg.checkpoint_config = dict(max_keep_ckpts=10, interval=1)
     cfg.device = get_device()
     #cfg.fp16 = dict(loss_scale=512.)
 
@@ -84,6 +84,10 @@ def train(config):
     #datasets = [build_dataset(cfg.data.train),build_dataset(cfg.data.val)]
     #cfg.workflow=[('val',1)]
 
+    #split focus를 위한 loss 가중치
+    #cfg.train_cfg.rcnn.sampler.pos_weight=
+    #cfg.model.train_cfg.rcnn.sampler.neg_pos_ub = 3
+     
     datasets = [build_dataset(cfg.data.train)]
     model = build_detector(cfg.model)
     if 'load_from' not in config and 'resume_from' not in config:

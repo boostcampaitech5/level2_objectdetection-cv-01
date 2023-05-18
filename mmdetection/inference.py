@@ -13,22 +13,22 @@ from pycocotools.coco import COCO
 import numpy as np
 import json
 
-with open('./config_dcn.json','r') as f:
+with open('./config_detr.json','r') as f:
     config = json.load(f)
 
 classes = ("General trash", "Paper", "Paper pack", "Metal", "Glass", 
            "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing")
-
+class_converter=[3,8]
 # config file 들고오기
 cfg = Config.fromfile(config['base_model'])
 
 root=config['data_dir']
 
 # epoch = 'latest'
-epoch = 'epoch_17'
+epoch = 'epoch_13 copy'
 
 # dataset config 수정
-cfg.data.test.classes = classes
+cfg.data.test.classes = config['classes']
 cfg.data.test.img_prefix = root
 cfg.data.test.ann_file = root + config['test_json'] # test json 정보
 # cfg.data.test.pipeline[1]['img_scale'] = tuple(config['resize']) # # Resize
@@ -40,7 +40,7 @@ cfg.seed=config['seed']
 cfg.gpu_ids = [1]
 cfg.work_dir = config['work_dir']
 
-cfg.model.roi_head.bbox_head.num_classes = config['num_classes']
+cfg.model.bbox_head.num_classes = config['num_classes']
 
 cfg.optimizer_config.grad_clip = dict(max_norm=35, norm_type=2)
 cfg.model.train_cfg = None
@@ -71,14 +71,14 @@ file_names = []
 coco = COCO(cfg.data.test.ann_file)
 img_ids = coco.getImgIds()
 
-class_num = 10
+class_num = 2
 for i, out in enumerate(output):
     prediction_string = ''
     image_info = coco.loadImgs(img_ids[i])[0]
-    for j in range(class_num):
-        for o in out[j]:
-            prediction_string += str(j) + ' ' + str(o[4]) + ' ' + str(o[0]) + ' ' + str(o[1]) + ' ' + str(
-                o[2]) + ' ' + str(o[3]) + ' '
+    j=1
+    for o in out[j]:
+        prediction_string += str(class_converter[j]) + ' ' + str(o[4]) + ' ' + str(o[0]) + ' ' + str(o[1]) + ' ' + str(
+            o[2]) + ' ' + str(o[3]) + ' '
    # print(prediction_string)
     prediction_strings.append(prediction_string)
     file_names.append(image_info['file_name'])

@@ -1,15 +1,14 @@
 {
-    "classes": ["General trash", "Paper", "Paper pack", "Metal", "Glass", 
-    "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing"],
+    "classes":  ["Metal","Battery"],
     "data_dir": "/opt/ml/dataset/",
     "resize": [1024,1024],
     "seed": 311,
-    "num_classes": 10,
-    "train_json": "split_train.json",
-    "val_json": "split_val.json",
+    "num_classes": 2,
+    "train_json": "classwise_dataset/split_train_3,8.json",
+    "val_json": "classwise_dataset/split_val_3,8.json",
     "test_json": "test.json",
     "max_epochs": 80,
-    "wandb_logger": false,
+    "wandb_logger": true,
     "wandb_args":{
         "init_kwargs":{
             "project": "object_detection",
@@ -35,7 +34,7 @@
         }]
     
     },
-    "work_dir": "./work_dirs/dcn",
+    "work_dir": "./work_dirs/dcn_split",
     "base_model": "./configs/custom/custom_dcn.py",
-    "load_from": "epoch_17.pth"
+    "load_from": "faster_rcnn_r50_fpn_mdconv_c3-c5_group4_1x_coco_20200130-01262257.pth"
 }

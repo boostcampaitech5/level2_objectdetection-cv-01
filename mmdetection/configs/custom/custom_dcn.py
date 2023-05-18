@@ -39,6 +39,7 @@ test_pipeline = [
         img_scale=(1024,1024),
         flip=False,
         transforms=[
+     #       dict(type="Rotate",level=10,max_rotate_angle=90,prob=0.5),
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),

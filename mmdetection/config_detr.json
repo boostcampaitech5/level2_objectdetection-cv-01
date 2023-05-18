@@ -1,14 +1,13 @@
 {
-    "classes": ["General trash", "Paper", "Paper pack", "Metal", "Glass", 
-    "Plastic", "Styrofoam", "Plastic bag", "Battery", "Clothing"],
+    "classes": [ "Glass", "Plastic"],
     "data_dir": "/opt/ml/dataset/",
     "resize": [1024,1024],
     "seed": 311,
-    "num_classes": 10,
-    "train_json": "split_train.json",
-    "val_json": "split_val.json",
+    "num_classes": 2,
+    "train_json": "classwise_dataset/split_train_4,5.json",
+    "val_json": "classwise_dataset/split_val_4,5.json",
     "test_json": "test.json",
-    "max_epochs": 80,
+    "max_epochs": 10,
     "wandb_logger": true,
     "wandb_args":{
         "init_kwargs":{
@@ -35,7 +34,7 @@
         }]
     
     },
-    "work_dir": "./work_dirs/deformable_detr",
+    "work_dir": "./work_dirs/deformable_detr_split",
     "base_model": "./configs/custom/custom copy.py",
-    "load_from": "deformable_detr_r50_16x2_50e_coco_20210419_220030-a12b9512.pth"
+    "load_from": "epoch_15.pth"
 }
