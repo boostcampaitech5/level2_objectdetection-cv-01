@@ -1,5 +1,5 @@
 root = ../dataset/
-model_name = swin-t-p4-w7_cascade_rcnn_Non_Local_fpn_adamW_focalLoss_CosRes_mstrain_high_epoch
+model_name = vfnet_x101_64x4d_fpn_adamW_mstrain_augmentation
 project_name = swin_cascade_rcnn
 cfg_path = ./custom/
 train_ann_file_name = split_train.json
@@ -9,4 +9,4 @@ val_resize = 512
 test_ann_file_name = test.json
 test_resize = 512
 work_dir_path = ./work_dirs/
-pretrained = /opt/ml/level2_objectdetection-cv-01/work_dirs/swin-t-p4-w7_cascade_rcnn_Non_Local_fpn_adamW_focalLoss_CosRes_mstrain/latest.pth
+pretrained = /opt/ml/level2_objectdetection-cv-01/work_dirs/vfnet_x101_64x4d_fpn_adamW_mstrain/latest.pth

@@ -18,9 +18,9 @@ lr_config = dict(
     warmup="linear",
     warmup_iters=1000,
     warmup_ratio=0.001,
-    periods=[1, 7, 7, 7, 7],
+    periods=[1, 7, 7, 7, 8],
     restart_weights=[1, 1, 0.5, 0.5, 0.25],
-    min_lr=1e-5,
+    min_lr=5e-6,
 )
 
 runner = dict(type="EpochBasedRunner", max_epochs=30)

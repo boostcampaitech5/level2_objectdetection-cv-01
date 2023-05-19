@@ -2,3 +2,4 @@ mmdetection/
 work_dirs/
 wandb/
 src/
+artifacts/
