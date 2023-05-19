@@ -107,9 +107,9 @@ train_pipeline = [
     #     ratio_range=(0.8, 1.6),
     #     pad_val=114.0),
 
-    # dict(type='Resize', img_scale=(512, 512), keep_ratio=True),
+    dict(type='Resize', img_scale=(512, 512), keep_ratio=True),
     # multiscale
-    dict(type='Resize', img_scale=[(1024, 1024), (512, 512)], multiscale_mode = "range", keep_ratio=True), 
+    # dict(type='Resize', img_scale=[(1024, 1024), (512, 512)], multiscale_mode = "range", keep_ratio=True), 
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -153,3 +153,8 @@ data = dict(
         ann_file=data_root + 'test.json',
         img_prefix=data_root,
         pipeline=test_pipeline))
+
+# cosine annealing
+# lr_config=dict(polyicy='CosineAnnealing', min_lr_ratio=0.001, by_epoch = False)
+# cosine restart
+# lr_config=dict(polyicy="CosineResatrt", min_lr_ratio=0.001, by_epoch = False)

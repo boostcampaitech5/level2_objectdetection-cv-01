@@ -45,6 +45,7 @@ def set_config(cfg:Config, epochs):
         cfg (Config): config to customize
         epochs (int): train epoch
     """
+
     # cfg.data.samples_per_gpu = 4
 
     cfg.seed = 2023
@@ -56,19 +57,29 @@ def set_config(cfg:Config, epochs):
     # evaluation = dict(interval=1, classwise=True, metric="bbox")
 
     cfg.runner = dict(type='EpochBasedRunner', max_epochs=epochs)
-    # cfg.optimizer = dict(type='SGD', lr=0.002, momentum=0.9, weight_decay=0.0001)
+
+    # optimizer
+    # cfg.optimizer=dict(type="AdamW", lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05)
+    # cfg.optimizer=dict(type='Adam', lr=0.0003, weight_decay=0.0001)
 
     # fp16
-    cfg.fp16 = dict(loss_scale=512.0)
+    # cfg.fp16 = dict(loss_scale=512.0)
 
     # soft nms
-    cfg.test.config.nms=dict(type="soft_nms", iou_threshold=0.7)
+    # cfg.model.test_config.nms=dict(type="soft_nms", iou_threshold=0.7)
 
     # cosine annealing
-    cfg.lr_config=dict(polyicy='CosineAnnealing', min_lr_ratio=0.001, by_epoch = False)
+    # cfg.lr_config=dict(policy='CosineAnnealing', min_lr_ratio=0.001, by_epoch = False)
     # cosine restart
-    # cfg.lr_config=dict(polyicy="CosineResatrt", min_lr_ratio=0.001, by_epoch = False)
+    # cfg.lr_config=dict(policy="CosineRestart", warmup="linear", warmup_iters=1000,
+    #                     warmup_ratio=0.001, periods=[1, 12, 12, 12, 12, 12, 12, 12, 12, 12],
+    #                     restart_weights=[1, 1, 0.75, 0.75, 0.5, 0.5, 0.25, 0.25, 0.125, 0.125],
+    #                     min_lr=1e-5,)
     
+    # resume_from
+    # cfg.load_from = 'path'
+    # cfg.resume_from = 'path'
+
 
 def train(cfg_path, epochs, checkpoint_path=None):
     """ train model
@@ -84,8 +95,8 @@ def train(cfg_path, epochs, checkpoint_path=None):
 
     now = datetime.now().strftime('%y%m%d_%H%M_')
     dir_name = now + cfg.model['type'] + '_epochs' + str(epochs)
-    if checkpoint_path != None:
-        dir_name += '_resume'
+    # if checkpoint_path != None:
+    #     dir_name += '_resume'
     cfg.work_dir = os.path.join('./work_dirs/', dir_name)
 
     # set config   
@@ -114,10 +125,10 @@ if __name__ == '__main__':
     #         './models/ssd300_coco_20210803_015428-d231a06e.pth')
     
     # SSD 512 / pre-trained
-    train('./configs/ssd/mySSD512.py', 60,
-            './models/ssd512_coco_20210803_022849-0a47a1ca.pth')
+    # train('./configs/ssd/mySSD512.py', 60,
+    #         './models/ssd512_coco_20210803_022849-0a47a1ca.pth')
 
     # YOLO v3 / pre-trained
-    # train('./configs/yolo/myYolov3.py', 60, 
-    #     #   './models/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth')
+    train('./configs/yolo/myYolov3.py', 30, 
+          './models/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth')
     #         './work_dirs/230511_1016_YOLOV3_epochs60_pretrained/latest.pth')

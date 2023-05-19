@@ -1,7 +1,7 @@
 _base_ = './yolov3_d53_mstrain-608_273e_coco.py'
 
 # dataset settings
-# dataset_type = 'CocoDataset'
+dataset_type = 'CocoDataset'
 data_root = '../../dataset/'
 
 classes = ("General trash", "Paper", "Paper pack", "Metal", "Glass", 
@@ -49,6 +49,27 @@ model = dict(
             use_sigmoid=True,
             loss_weight=2.0,
             reduction='sum'),
+
+        # focal loss
+        # loss_cls=dict(
+        #     type='FocalLoss',
+        #     use_sigmoid=True,
+        #     gamma=2.0,
+        #     alpha=0.25,
+        #     loss_weight=1.0),
+        # loss_conf=dict(
+        #     type='FocalLoss',
+        #     use_sigmoid=True,
+        #     gamma=2.0,
+        #     alpha=0.25,
+        #     loss_weight=1.0),
+        # loss_xy=dict(
+        #     type='FocalLoss',
+        #     use_sigmoid=True,
+        #     gamma=2.0,
+        #     alpha=0.25,
+        #     loss_weight=1.0),
+
         loss_wh=dict(type='MSELoss', loss_weight=2.0, reduction='sum')),
     # training and testing settings
     train_cfg=dict(
@@ -62,7 +83,9 @@ model = dict(
         min_bbox_size=0,
         score_thr=0.05,
         conf_thr=0.005,
-        nms=dict(type='nms', iou_threshold=0.45),
+        # nms=dict(type='nms', iou_threshold=0.45),
+        # soft nms
+        nms=dict(type="soft_nms", iou_threshold=0.7),
         max_per_img=100))
 
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255., 255., 255.], to_rgb=True)
@@ -78,7 +101,17 @@ train_pipeline = [
         type='MinIoURandomCrop',
         min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
         min_crop_size=0.3),
+    # # mosaic
+    # dict(type='Mosaic', img_scale=(512, 512), pad_val=114.0),
+    # # # mixup
+    # dict(
+    #     type='MixUp',
+    #     img_scale=(512, 512),
+    #     ratio_range=(0.8, 1.6),
+    #     pad_val=114.0),
     dict(type='Resize', img_scale=(512, 512), keep_ratio=True),
+    # multi scale
+    # dict(type='Resize', img_scale=[(1024, 1024), (512, 512)], multiscale_mode = "range", keep_ratio=True), 
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='PhotoMetricDistortion'),
     dict(type='Normalize', **img_norm_cfg),
@@ -86,6 +119,21 @@ train_pipeline = [
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
 ]
+
+# train_dataset = dict(
+#     type='MultiImageMixDataset',
+#     dataset=dict(
+#         type=dataset_type,
+#         ann_file=data_root + 'split_train.json',
+#         img_prefix=data_root,
+#         pipeline=[
+#             dict(type='LoadImageFromFile'),
+#             dict(type='LoadAnnotations', with_bbox=True)
+#         ],
+#         filter_empty_gt=False,
+#     ),
+#     pipeline=train_pipeline)
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -102,7 +150,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=16,
+    samples_per_gpu=8,
+    # samples_per_gpu=16,
     # workers_per_gpu=4,
     train=dict(
         # type=dataset_type,
@@ -123,4 +172,3 @@ data = dict(
         img_prefix=data_root,
         pipeline=test_pipeline))
 
-# fp16 = dict(loss_scale=512.0)
